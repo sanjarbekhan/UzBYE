@@ -6,7 +6,11 @@ TOKEN = '8915114593:AAFsecTLdtGbcRPw4HSOSRVBOpXG0aUxoec'
 bot = telebot.TeleBot(TOKEN, parse_mode='HTML')
 
 # Adminning telegram username'i (Sizning profilingiz)
-ADMIN_USERNAME = '@x_sanjar'
+# ESKI QISMI:
+# ADMIN_USERNAME = '@x_sanjar'
+
+# YANGI QISMI:
+ADMIN_ID = 6755433894  # O'z ID raqamingizni shu yerga yozing
 
 # Foydalanuvchilar ma'lumotlarini vaqtinchalik saqlash uchun lug'at
 user_data = {}
@@ -179,11 +183,16 @@ def process_final_answers(message):
 
     try:
         if photo_file_id:
-            bot.send_photo(ADMIN_USERNAME, photo_file_id, caption=admin_text)
+            bot.send_photo(ADMIN_ID, photo_file_id, caption=admin_text)
         else:
-            bot.send_message(ADMIN_USERNAME, admin_text)
+            bot.send_message(ADMIN_ID, admin_text)
             
-        bot.send_message(chat_id, "Tez orada biografik maqolangiz chiqadi va adminlarimiz siz bilan bogʻlanadi", reply_markup=main_menu())
+        bot.send_message(chat_id, "✅ Ma'lumotlaringiz muvaffaqiyatli yuborildi! Adminlarimiz siz bilan bog'lanadi.")
+        
+    except Exception as e:
+        # Xatolikni terminalda ko'rish
+        print(f"DEBUG XATOLIK: {e}") 
+        bot.send_message(chat_id, "Kechirasiz, texnik nosozlik yuz berdi. Iltimos, keyinroq urinib ko'ring.")
         
     except Exception as e:
         bot.send_message(chat_id, "Xatolik yuz berdi! Admin botni bloklagan bo'lishi mumkin. Lekin ma'lumotlaringiz qabul qilindi.", reply_markup=main_menu())
@@ -191,4 +200,5 @@ def process_final_answers(message):
 
 if __name__ == '__main__':
     print("Ensiklopediya boti ishga tushdi...")
-    bot.polling(none_stop=True)
+    bot.remove_webhook()
+    bot.infinity_polling(none_stop=True)
