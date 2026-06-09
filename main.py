@@ -2,7 +2,7 @@ import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
 # Bot tokenini kiriting
-TOKEN = '8915114593:AAFsecTLdtGbcRPw4HSOSRVBOpXG0aUxoec'
+TOKEN = '8915114593:AAF2Fu3TU-6IK0vITJ7xIyiSTmfs-0CMa70'
 bot = telebot.TeleBot(TOKEN, parse_mode='HTML')
 
 # Adminning telegram username'i (Sizning profilingiz)
