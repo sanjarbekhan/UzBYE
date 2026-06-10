@@ -1,6 +1,7 @@
 import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-
+from flask import Flask    # Buni qo'shing
+from threading import Thread # Buni qo'shing
 # Bot tokenini kiriting
 TOKEN = '8915114593:AAF2Fu3TU-6IK0vITJ7xIyiSTmfs-0CMa70'
 bot = telebot.TeleBot(TOKEN, parse_mode='HTML')
@@ -34,8 +35,24 @@ def main_menu():
     markup.add(btn2, btn3)
     return markup
 
+# --- BU YERGA QO'SHASIZ ---
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot ishlayapti!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+# --------------------------
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    # ... qolgan kodlaringiz ...
     first_name = message.from_user.first_name
     text = f"Assalomu alaykum <b>{first_name}</b>, \"Oʻzbekiston Bunyodkor Yoshlari ensiklopediyasi\" telegram botiga xush kelibsiz!\n\nIltimos Kerakli boʻlimni tanlang."
     bot.send_message(message.chat.id, text, reply_markup=main_menu())
@@ -199,6 +216,7 @@ def process_final_answers(message):
         print(f"Xatolik: {e}")
 
 if __name__ == '__main__':
+    keep_alive()  # Veb-serverni ishga tushiradi (UptimeRobot uchun kerak)
     print("Ensiklopediya boti ishga tushdi...")
     bot.remove_webhook()
     bot.infinity_polling(none_stop=True)
