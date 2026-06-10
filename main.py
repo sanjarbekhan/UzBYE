@@ -1,17 +1,15 @@
 import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from flask import Flask    # Buni qo'shing
-from threading import Thread # Buni qo'shing
+from flask import Flask
+from threading import Thread
+import io  # Uzun matnlarni aqlli ravishda faylga aylantirish uchun kerak
+
 # Bot tokenini kiriting
-TOKEN = '8915114593:AAE665uvUBR07GRzAxB4vxc6GKLqfRycVDk'
+TOKEN = '8915114593:AAFalFfZssCdMdVD0P3NdjrX2qsmffWCeJs'
 bot = telebot.TeleBot(TOKEN, parse_mode='HTML')
 
-# Adminning telegram username'i (Sizning profilingiz)
-# ESKI QISMI:
-# ADMIN_USERNAME = '@x_sanjar'
-
-# YANGI QISMI:
-ADMIN_ID = 6755433894  # O'z ID raqamingizni shu yerga yozing
+# Admin ID raqami
+ADMIN_ID = 6755433894  
 
 # Foydalanuvchilar ma'lumotlarini vaqtinchalik saqlash uchun lug'at
 user_data = {}
@@ -24,6 +22,10 @@ class UserForm:
         self.tg_user = None
         self.telefon = None
         self.user_id = None
+        self.answers = None
+        self.photo_file_id = None
+        self.file_type = None
+        self.instagram = None
 
 # Asosiy menyu tugmalari
 def main_menu():
@@ -35,7 +37,7 @@ def main_menu():
     markup.add(btn2, btn3)
     return markup
 
-# --- BU YERGA QO'SHASIZ ---
+# --- FLASK SERVER (RENDER/UPTIMEROBOT UCHUN) ---
 app = Flask('')
 
 @app.route('/')
@@ -48,11 +50,10 @@ def run():
 def keep_alive():
     t = Thread(target=run)
     t.start()
-# --------------------------
+# ---------------------------------------------
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    # ... qolgan kodlaringiz ...
     first_name = message.from_user.first_name
     text = f"Assalomu alaykum <b>{first_name}</b>, \"Oʻzbekiston Bunyodkor Yoshlari ensiklopediyasi\" telegram botiga xush kelibsiz!\n\nIltimos Kerakli boʻlimni tanlang."
     bot.send_message(message.chat.id, text, reply_markup=main_menu())
@@ -60,24 +61,24 @@ def send_welcome(message):
 @bot.message_handler(func=lambda message: message.text == 'ℹ️ Biz haqimizda')
 def about_us(message):
     about_text = (
-        "Ushbu xabarda sizga qo‘shimcha ma’lumotlarni taqdim etmoqdamiz.\n"
-        "Ensiklopediyaga istalgan sohada faoliyat yuritayotgan, o‘z ustida ishlayotgan yoshlar qabul qilinadi.\n"
-        "Bu loyiha yoshlarning yutuqlarini hujjatlashtirish, ularni ommaga tanitish va boshqalarga ilhom manbai bo‘lish maqsadida yaratilgan.\n\n"
+        "<b>O'zbekiston Bunyodkor Yoshlari ensiklopediyasi har qanday sohada faoliyat olib borayotgan, o'z ustida ishlayotgan intiluvchan yoshlarni ommaga tanitish va hujjatlashtirishni maqsad qilgan respublika miqyosidagi ulkan loyihalardir.\n\n"
+        "Ensiklopediyaga istalgan sohada faoliyat yuritayotgan, o‘z ustida ishlayotgan yoshlar qabul qilinadi!</b>\n\n"
+        "Ushbu ma'lumotda ensiklopediyamizga kirishning afzalliklari keltirib o'tilgan:\n\n"
         "✅ <b>Qidiruv tizimlarida ko‘rinish:</b>\n"
         "Siz haqingizdagi maqola Google, Yandex, Bing kabi qidiruv tizimlarida chiqadi. Bu sizni istagan odam — hamkor, ish beruvchi yoki jurnalist — osongina topishi mumkinligini anglatadi.\n\n"
         "✅ <b>Sun’iy intellekt platformalarida tanilish:</b>\n"
-        "ChatGPT, Copilot, Gemini kabi sun’iy intellekt tizimlari endilikda siz haqingizda aniq manbalarga tayangan holda ma’lumot bera oladi. Bu sizning onlayn obro‘yingizni mustahkamlovchi kuchli vosita.\n\n"
+        "ChatGPT, Copilot, Gemini kabi sun’iy intellekt tizimlari endilikda siz haqingizda aniq manbasiz ma’lumot bera olmaydi. Bu onlayn obro‘yingizni mustahkamlovchi kuchli vosita.\n\n"
         "✅ <b>Kelajakdagi Wikipedia sahifangiz uchun asos:</b>\n"
         "Bugun e’lon qilinadigan maqola — ertaga siz haqingizda yoziladigan Wikipedia sahifasi uchun tayyor ishonchli manba bo‘lishi mumkin.\n\n"
         "✅ <b>Ijtimoiy tarmoqlarda tasdiq belgisi olish imkoniyati:</b>\n"
         "Instagram, Facebook, TikTok, YouTube kabi platformalarda ko‘k nishon olish uchun siz haqingizda onlayn nashrlar zarur. Ushbu maqola bu yo‘lda ishonchli hujjat bo‘lib xizmat qiladi.\n\n"
         "✅ <b>Rezumega qo‘shiladigan rasmiy havola:</b>\n"
         "Ish qidirishda, grantga hujjat topshirishda yoki xalqaro loyihalarda qatnashishda ushbu maqola — sizning shaxsiy brendingizni isbotlovchi kuchli hujjat bo‘ladi.\n\n"
-        "✅ <b>Bunyodkor yoshlar online jurnalida yoritilish</b>\n"
-        "Biografik maqolasi bor yoshlar Bunyodkor yoshlar online jurnalida mumtazam yoritiladi. Ularning hayotida yuz bergan muhim voqea, ularning loyihalari va tashabburlari keng targ'ib qilinadi.\n\n"
+        "✅ <b>Bunyodkor yoshlar online jurnalida yoritilish:</b>\n"
+        "Biografik maqolasi bor yoshlar Bunyodkor yoshlar online jurnalida muntazam yoritiladi. Ularning hayotida yuz bergan muhim voqea, ularning loyihalari va tashabburlari keng targ'ib qilinadi.\n\n"
         "✅ <b>Ommaviy axborot vositalari e’tiboriga tushasiz:</b>\n"
         "Jurnalistlar, blogerlar, televideniye va radio uchun maqolaviy manba sifatida sizga murojaatlar ko‘payadi.\n\n"
-        "✅ <b>Bunyodkorlar iqtibosida faollik</b>\n"
+        "✅ <b>Bunyodkorlar iqtibosida faollik:</b>\n"
         "Har qanday jamiyat uchun kerakli va mamnunli gʼoyangizni Liderlardan iqtiboslar ruknida e'lon qilishingiz mumkin bo'ladi.\n\n"
         "✅ <b>Shaxsiy brendingiz uchun poydevor:</b>\n"
         "Har qanday lider, ekspert yoki jamoat faoli uchun shaxsiy brend muhim. Bu maqola — o‘zingizga bo‘lgan ishonchni va boshqalarning sizga nisbatan ishonchini mustahkamlaydi.\n\n"
@@ -110,25 +111,25 @@ def start_form(message):
 
 def process_ism(message):
     chat_id = message.chat.id
-    user_data[chat_id].ism = message.text
+    user_data[chat_id].ism = message.text if message.text else "Kiritilmagan"
     msg = bot.send_message(chat_id, "Familiyangiz:")
     bot.register_next_step_handler(msg, process_familiya)
 
 def process_familiya(message):
     chat_id = message.chat.id
-    user_data[chat_id].familiya = message.text
+    user_data[chat_id].familiya = message.text if message.text else "Kiritilmagan"
     msg = bot.send_message(chat_id, "Otangiz ismi:")
     bot.register_next_step_handler(msg, process_ota_ismi)
 
 def process_ota_ismi(message):
     chat_id = message.chat.id
-    user_data[chat_id].ota_ismi = message.text
+    user_data[chat_id].ota_ismi = message.text if message.text else "Kiritilmagan"
     msg = bot.send_message(chat_id, "Telegramingiz username'i (masalan: @username):")
     bot.register_next_step_handler(msg, process_username)
 
 def process_username(message):
     chat_id = message.chat.id
-    user_data[chat_id].tg_user = message.text
+    user_data[chat_id].tg_user = message.text if message.text else "Kiritilmagan"
     
     markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     btn = KeyboardButton("📱 Kontaktni ulashish", request_contact=True)
@@ -139,16 +140,15 @@ def process_username(message):
 
 def process_contact(message):
     chat_id = message.chat.id
-    # Agar foydalanuvchi tugmani bosib yuborsa kontakt keladi, qo'lda yozsa text keladi
     if message.contact is not None:
         user_data[chat_id].telefon = message.contact.phone_number
     else:
-        user_data[chat_id].telefon = message.text
+        user_data[chat_id].telefon = message.text if message.text else "Kiritilmagan"
 
     questions_text = (
         "Iltimos Maqolaga asos bo’ladigan savollarga javob bering!\n"
         "Javoblarni yonidan xos tartibraqam qo’ying.\n"
-        "Maqola va brending ishlari uchun to’g’riga qaragan va agar boʻlsa rasmiy, boʻlmasa norasmiy kiyingan rasmingizni yuboring!\n\n"
+        "Javoblaringiz adminga yuboriladi\n\n"
         "📋 <b>Biografik maqola yozish uchun savollar:</b>\n\n"
         "1. To‘liq ismingiz va familiyangiz?\n"
         "2. Tug‘ilgan yilingiz, kuni va joyingiz?\n"
@@ -168,6 +168,47 @@ def process_contact(message):
     )
     
     msg = bot.send_message(chat_id, questions_text, reply_markup=telebot.types.ReplyKeyboardRemove())
+    bot.register_next_step_handler(msg, process_answers)
+
+def process_answers(message):
+    chat_id = message.chat.id
+    data = user_data.get(chat_id)
+    
+    if not data:
+        bot.send_message(chat_id, "Xatolik yuz berdi. Iltimos qaytadan /start bosing.")
+        return
+
+    data.answers = message.text if message.text else "Kiritilmagan"
+    
+    photo_text = (
+        "Ajoyib, endi toʻgʻri qaralgan va agarda boʻlsa rasmiy, bo'lmasa norasmiy "
+        "tushgan rasmingizni hujjat sifatida (yoki oddiy rasm) qilib yuboring!"
+    )
+    msg = bot.send_message(chat_id, photo_text)
+    bot.register_next_step_handler(msg, process_photo)
+
+def process_photo(message):
+    chat_id = message.chat.id
+    data = user_data.get(chat_id)
+    
+    if not data:
+        bot.send_message(chat_id, "Xatolik yuz berdi. Iltimos qaytadan /start bosing.")
+        return
+
+    if message.content_type == 'photo':
+        data.photo_file_id = message.photo[-1].file_id 
+        data.file_type = 'photo'
+    elif message.content_type == 'document':
+        data.photo_file_id = message.document.file_id 
+        data.file_type = 'document'
+    else:
+        # Foydalanuvchi rasm o'rniga adashib matn yuborsa ham bot qulab tushmaydi, qayta rasm so'raydi
+        msg = bot.send_message(chat_id, "Iltimos, faqat rasm yoki rasm shaklidagi hujjat yuboring!")
+        bot.register_next_step_handler(msg, process_photo)
+        return
+
+    insta_text = "Agar instagram sahifangiz bo'lsa uni xatolarsiz yozib bering. Bo'lmasa \"YO'Q\" deb yozing."
+    msg = bot.send_message(chat_id, insta_text)
     bot.register_next_step_handler(msg, process_final_answers)
 
 def process_final_answers(message):
@@ -178,15 +219,8 @@ def process_final_answers(message):
         bot.send_message(chat_id, "Xatolik yuz berdi. Iltimos qaytadan /start bosing.")
         return
 
-    # Rasm bilan matn birga yuborilsa tutib olish uchun
-    if message.content_type == 'photo':
-        answers = message.caption if message.caption else "Faqat rasm yuborildi."
-        photo_file_id = message.photo[-1].file_id
-    else:
-        answers = message.text
-        photo_file_id = None
-
-    # Adminga yuboriladigan xabar shabloni
+    data.instagram = message.text if message.text else "YO'Q"
+    
     admin_text = (
         f"📩 <b>YANGI ARIZA KELIB TUSHDI!</b>\n\n"
         f"👤 <b>Ism:</b> {data.ism}\n"
@@ -194,29 +228,51 @@ def process_final_answers(message):
         f"👨‍👦 <b>Ota ismi:</b> {data.ota_ismi}\n"
         f"📞 <b>Telefon:</b> {data.telefon}\n"
         f"🌐 <b>Username:</b> {data.tg_user}\n"
+        f"📱 <b>Instagram:</b> {data.instagram}\n"
         f"🔗 <b>Foydalanuvchi profili:</b> <a href='tg://user?id={data.user_id}'>Profilga o'tish</a>\n\n"
-        f"📝 <b>SAVOLLARGA JAVOBLAR:</b>\n{answers}"
+        f"📝 <b>SAVOLLARGA JAVOBLAR:</b>\n{data.answers}"
     )
 
     try:
-        if photo_file_id:
-            bot.send_photo(ADMIN_ID, photo_file_id, caption=admin_text)
+        # 1. Telegram limiti 4096 belgi. Agar matn uzun bo'lsa, uni fayl ko'rinishida yuboramiz
+        if len(admin_text) <= 4000:
+            bot.send_message(ADMIN_ID, admin_text, parse_mode='HTML')
         else:
-            bot.send_message(ADMIN_ID, admin_text)
+            # Qisqa ma'lumotlarni o'zini yuboramiz
+            qisqa_matn = (
+                f"📩 <b>YANGI ARIZA (MATN JUDA UZUN)!</b>\n\n"
+                f"👤 <b>Ism:</b> {data.ism}\n"
+                f"👥 <b>Familiya:</b> {data.familiya}\n"
+                f"👨‍👦 <b>Ota ismi:</b> {data.ota_ismi}\n"
+                f"📞 <b>Telefon:</b> {data.telefon}\n"
+                f"🌐 <b>Username:</b> {data.tg_user}\n"
+                f"📱 <b>Instagram:</b> {data.instagram}\n"
+                f"🔗 <b>Foydalanuvchi profili:</b> <a href='tg://user?id={data.user_id}'>Profilga o'tish</a>\n\n"
+                f"⚠️ <i>Diqqat: Javoblar matni 4000 belgidan oshgani uchun pastda .txt fayl qilib yuborildi!</i>"
+            )
+            bot.send_message(ADMIN_ID, qisqa_matn, parse_mode='HTML')
             
-        bot.send_message(chat_id, "✅ Ma'lumotlaringiz muvaffaqiyatli yuborildi! Adminlarimiz siz bilan bog'lanadi.")
-        
+            # Javoblarni server xotirasining o'zida .txt faylga aylantiramiz
+            fayl = io.BytesIO(data.answers.encode('utf-8'))
+            fayl.name = f"{data.ism}_{data.familiya}_javoblari.txt"
+            bot.send_document(ADMIN_ID, fayl, caption=f"📝 {data.ism} ning to'liq javoblari")
+
+        # 2. Keyin rasm yoki hujjatni alohida yuboramiz
+        if data.photo_file_id:
+            caption_text = f"👤 {data.ism} {data.familiya} ning rasmi"
+            if data.file_type == 'photo':
+                bot.send_photo(ADMIN_ID, data.photo_file_id, caption=caption_text)
+            else:
+                bot.send_document(ADMIN_ID, data.photo_file_id, caption=caption_text)
+                
+        bot.send_message(chat_id, "✅ Ma'lumotlaringiz muvaffaqiyatli yuborildi! Adminlarimiz siz bilan bog'lanadi.", reply_markup=main_menu())
+
     except Exception as e:
-        # Xatolikni terminalda ko'rish
-        print(f"DEBUG XATOLIK: {e}") 
-        bot.send_message(chat_id, "Kechirasiz, texnik nosozlik yuz berdi. Iltimos, keyinroq urinib ko'ring.")
-        
-    except Exception as e:
-        bot.send_message(chat_id, "Xatolik yuz berdi! Admin botni bloklagan bo'lishi mumkin. Lekin ma'lumotlaringiz qabul qilindi.", reply_markup=main_menu())
-        print(f"Xatolik: {e}")
+        print(f"DEBUG XATOLIK: {e}")
+        bot.send_message(chat_id, "Kechirasiz, texnik xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.", reply_markup=main_menu())
 
 if __name__ == '__main__':
-    keep_alive()  # Veb-serverni ishga tushiradi (UptimeRobot uchun kerak)
+    keep_alive()  # Veb-serverni ishga tushiradi
     print("Ensiklopediya boti ishga tushdi...")
     bot.remove_webhook()
     bot.infinity_polling(none_stop=True)
