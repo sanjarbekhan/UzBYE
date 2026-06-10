@@ -5,7 +5,7 @@ from threading import Thread
 import io  # Uzun matnlarni aqlli ravishda faylga aylantirish uchun kerak
 
 # Bot tokenini kiriting
-TOKEN = '8915114593:AAFttdvFhj25EzFyORT4l6dwGk1B8r-_VyU'
+TOKEN = '8915114593:AAEJ07wQ4VD59C8VpIHo3Njqun-8NY5HqPU'
 bot = telebot.TeleBot(TOKEN, parse_mode='HTML')
 
 # Admin ID raqami
@@ -62,7 +62,7 @@ def send_welcome(message):
 def about_us(message):
     about_text = (
         "<b>O'zbekiston Bunyodkor Yoshlari ensiklopediyasi har qanday sohada faoliyat olib borayotgan, o'z ustida ishlayotgan intiluvchan yoshlarni ommaga tanitish va hujjatlashtirishni maqsad qilgan respublika miqyosidagi ulkan loyihalardir.\n\n"
-        "Ensiklopediya kirgan har bir nomzodning biografik maqolasi BUNYODKOR.COM sayti va ijtimoiy taqmoqlar orqali muntazam yoritib boriladi</b>\n\n"
+        "Ensiklopediya kirgan har bir nomzodning biografik maqolasi BUNYODKOR.COM sayti va ijtimoiy tarmoqlar orqali muntazam yoritib boriladi</b>\n\n"
         "Ushbu ma'lumotda ensiklopediyamizga kirishning afzalliklari keltirib o'tilgan:\n\n"
         "✅ <b>Qidiruv tizimlarida ko‘rinish:</b>\n"
         "Siz haqingizdagi maqola Google, Yandex, Bing kabi qidiruv tizimlarida chiqadi. Bu sizni istagan odam — hamkor, ish beruvchi yoki jurnalist — osongina topishi mumkinligini anglatadi.\n\n"
