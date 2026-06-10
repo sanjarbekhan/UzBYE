@@ -3,7 +3,7 @@ from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from flask import Flask    # Buni qo'shing
 from threading import Thread # Buni qo'shing
 # Bot tokenini kiriting
-TOKEN = '8915114593:AAF2Fu3TU-6IK0vITJ7xIyiSTmfs-0CMa70'
+TOKEN = '8915114593:AAE665uvUBR07GRzAxB4vxc6GKLqfRycVDk'
 bot = telebot.TeleBot(TOKEN, parse_mode='HTML')
 
 # Adminning telegram username'i (Sizning profilingiz)
